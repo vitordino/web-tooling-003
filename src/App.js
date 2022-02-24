@@ -41,6 +41,10 @@ const App = () => {
     getBreedsFromAPI();
   }, [setAllBreeds]);
 
+  useEffect(() => {
+    document.title = selectedBreed;
+  }, [selectedBreed]);
+
   if (!allBreeds) return <div>loading</div>;
 
   const selectRandomBreed = () =>

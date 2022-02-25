@@ -1,5 +1,4 @@
-import React, { useState } from "react";
-import useSWR from "swr";
+import React, { useEffect, useState } from "react";
 
 const LIST_ALL_BREEDS_ENDPOINT = "https://dog.ceo/api/breeds/list/all";
 
@@ -10,25 +9,49 @@ const getRandomItemFromArray = (array) =>
   array[Math.floor(Math.random() * array.length)];
 
 const DogImage = ({ breed }) => {
-  const { data } = useSWR(
-    `https://dog.ceo/api/breed/${breed}/images/random`,
-    fetchJSON
-  );
+  const [dogImageSrc, setDogImageSrc] = useState(null);
 
-  if (!data?.message) return null;
-  return <img src={data.message} alt={breed} />;
+  useEffect(() => {
+    const updateDogImageSrc = async () => {
+      const response = await fetchJSON(
+        `https://dog.ceo/api/breed/${breed}/images/random`
+      );
+      setDogImageSrc(response?.message || null);
+    };
+
+    updateDogImageSrc();
+  }, [breed]);
+
+  if (!dogImageSrc) return null;
+  return <img src={dogImageSrc} alt={breed} />;
 };
 
+export const massageData = (data) => Object.keys(data?.message);
+
 const App = () => {
-  const { data } = useSWR(LIST_ALL_BREEDS_ENDPOINT, fetchJSON);
+  const [allBreeds, setAllBreeds] = useState(null);
   const [selectedBreed, setSelectedBreed] = useState(null);
 
-  if (!data?.message) return null;
+  useEffect(() => {
+    const getBreedsFromAPI = async () => {
+      const response = await fetchJSON(LIST_ALL_BREEDS_ENDPOINT);
+      console.log({ response });
+      if (!response?.message) return;
+      const listOfBreeds = massageData(response);
+      setAllBreeds(listOfBreeds);
+    };
 
-  const listOfBreeds = Object.keys(data.message);
+    getBreedsFromAPI();
+  }, [setAllBreeds]);
+
+  useEffect(() => {
+    document.title = selectedBreed;
+  }, [selectedBreed]);
+
+  if (!allBreeds) return <div>loading</div>;
 
   const selectRandomBreed = () =>
-    setSelectedBreed(getRandomItemFromArray(listOfBreeds));
+    setSelectedBreed(getRandomItemFromArray(allBreeds));
 
   return (
     <div>
@@ -38,7 +61,7 @@ const App = () => {
           onChange={(e) => setSelectedBreed(e.target.value)}
         >
           <option value={null}>---</option>
-          {listOfBreeds.map((breed) => (
+          {allBreeds.map((breed) => (
             <option value={breed}>{breed}</option>
           ))}
         </select>

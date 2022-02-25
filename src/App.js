@@ -26,6 +26,8 @@ const DogImage = ({ breed }) => {
   return <img src={dogImageSrc} alt={breed} />;
 };
 
+export const massageData = (data) => Object.keys(data?.message);
+
 const App = () => {
   const [allBreeds, setAllBreeds] = useState(null);
   const [selectedBreed, setSelectedBreed] = useState(null);
@@ -33,8 +35,9 @@ const App = () => {
   useEffect(() => {
     const getBreedsFromAPI = async () => {
       const response = await fetchJSON(LIST_ALL_BREEDS_ENDPOINT);
+      console.log({ response });
       if (!response?.message) return;
-      const listOfBreeds = Object.keys(response?.message);
+      const listOfBreeds = massageData(response);
       setAllBreeds(listOfBreeds);
     };
 

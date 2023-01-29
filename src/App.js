@@ -1,75 +1,67 @@
-import React, { useEffect, useState } from "react";
+import React, { useEffect, useState } from 'react'
 
-const LIST_ALL_BREEDS_ENDPOINT = "https://dog.ceo/api/breeds/list/all";
+const LIST_ALL_BREEDS_ENDPOINT = 'https://dog.ceo/api/breeds/list/all'
 
-const fetchJSON = async (endpoint) =>
-  await fetch(endpoint).then((x) => x.json());
+const fetchJSON = async endpoint => await fetch(endpoint).then(x => x.json())
 
-const getRandomItemFromArray = (array) =>
-  array[Math.floor(Math.random() * array.length)];
+const getRandomItemFromArray = array => array[Math.floor(Math.random() * array.length)]
 
 const DogImage = ({ breed }) => {
-  const [dogImageSrc, setDogImageSrc] = useState(null);
+	const [dogImageSrc, setDogImageSrc] = useState(null)
 
-  useEffect(() => {
-    const updateDogImageSrc = async () => {
-      const response = await fetchJSON(
-        `https://dog.ceo/api/breed/${breed}/images/random`
-      );
-      setDogImageSrc(response?.message || null);
-    };
+	useEffect(() => {
+		const updateDogImageSrc = async () => {
+			const response = await fetchJSON(`https://dog.ceo/api/breed/${breed}/images/random`)
+			setDogImageSrc(response?.message || null)
+		}
 
-    updateDogImageSrc();
-  }, [breed]);
+		updateDogImageSrc()
+	}, [breed])
 
-  if (!dogImageSrc) return null;
-  return <img src={dogImageSrc} alt={breed} />;
-};
+	if (!dogImageSrc) return null
+	return <img src={dogImageSrc} alt={breed} />
+}
 
-export const massageData = (data) => Object.keys(data?.message);
+export const massageData = data => Object.keys(data?.message || {})
 
 const App = () => {
-  const [allBreeds, setAllBreeds] = useState(null);
-  const [selectedBreed, setSelectedBreed] = useState(null);
+	const [allBreeds, setAllBreeds] = useState(null)
+	const [selectedBreed, setSelectedBreed] = useState(null)
 
-  useEffect(() => {
-    const getBreedsFromAPI = async () => {
-      const response = await fetchJSON(LIST_ALL_BREEDS_ENDPOINT);
-      console.log({ response });
-      if (!response?.message) return;
-      const listOfBreeds = massageData(response);
-      setAllBreeds(listOfBreeds);
-    };
+	useEffect(() => {
+		const getBreedsFromAPI = async () => {
+			const response = await fetchJSON(LIST_ALL_BREEDS_ENDPOINT)
+			console.log({ response })
+			if (!response?.message) return
+			const listOfBreeds = massageData(response)
+			setAllBreeds(listOfBreeds)
+		}
 
-    getBreedsFromAPI();
-  }, [setAllBreeds]);
+		getBreedsFromAPI()
+	}, [setAllBreeds])
 
-  useEffect(() => {
-    document.title = selectedBreed;
-  }, [selectedBreed]);
+	useEffect(() => {
+		document.title = selectedBreed
+	}, [selectedBreed])
 
-  if (!allBreeds) return <div>loading</div>;
+	if (!allBreeds) return <div>loading</div>
 
-  const selectRandomBreed = () =>
-    setSelectedBreed(getRandomItemFromArray(allBreeds));
+	const selectRandomBreed = () => setSelectedBreed(getRandomItemFromArray(allBreeds))
 
-  return (
-    <div>
-      <div>
-        <select
-          value={selectedBreed}
-          onChange={(e) => setSelectedBreed(e.target.value)}
-        >
-          <option value={null}>---</option>
-          {allBreeds.map((breed) => (
-            <option value={breed}>{breed}</option>
-          ))}
-        </select>
-        <button onClick={selectRandomBreed}>random</button>
-      </div>
-      {selectedBreed && <DogImage breed={selectedBreed} />}
-    </div>
-  );
-};
+	return (
+		<div>
+			<div>
+				<select value={selectedBreed} onChange={e => setSelectedBreed(e.target.value)}>
+					<option value={null}>---</option>
+					{allBreeds.map(breed => (
+						<option value={breed}>{breed}</option>
+					))}
+				</select>
+				<button onClick={selectRandomBreed}>random</button>
+			</div>
+			{selectedBreed && <DogImage breed={selectedBreed} />}
+		</div>
+	)
+}
 
-export default App;
+export default App
